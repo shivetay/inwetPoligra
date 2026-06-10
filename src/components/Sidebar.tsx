@@ -1,9 +1,9 @@
+import type { ReactNode } from "react";
 import { t, type TranslationKey } from "../i18n";
 
-const navItems: { key: TranslationKey; active: boolean; icon: React.ReactNode }[] = [
+const navItemDefs: { key: TranslationKey; icon: ReactNode }[] = [
   {
     key: "nav.inventories",
-    active: true,
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" />
@@ -14,7 +14,6 @@ const navItems: { key: TranslationKey; active: boolean; icon: React.ReactNode }[
   },
   {
     key: "nav.templates",
-    active: false,
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
@@ -25,7 +24,6 @@ const navItems: { key: TranslationKey; active: boolean; icon: React.ReactNode }[
   },
   {
     key: "nav.assortmentLists",
-    active: false,
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <line x1="8" y1="6" x2="21" y2="6" />
@@ -39,7 +37,6 @@ const navItems: { key: TranslationKey; active: boolean; icon: React.ReactNode }[
   },
   {
     key: "nav.settings",
-    active: false,
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="3" />
@@ -49,7 +46,12 @@ const navItems: { key: TranslationKey; active: boolean; icon: React.ReactNode }[
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  activeNav?: TranslationKey;
+  infoPanel?: ReactNode;
+}
+
+export function Sidebar({ activeNav = "nav.inventories", infoPanel }: SidebarProps) {
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
@@ -65,17 +67,19 @@ export function Sidebar() {
       </div>
 
       <nav className="sidebar__nav">
-        {navItems.map((item) => (
+        {navItemDefs.map((item) => (
           <button
             key={item.key}
             type="button"
-            className={`sidebar__nav-item${item.active ? " sidebar__nav-item--active" : ""}`}
+            className={`sidebar__nav-item${activeNav === item.key ? " sidebar__nav-item--active" : ""}`}
           >
             <span className="sidebar__nav-icon">{item.icon}</span>
             {t(item.key)}
           </button>
         ))}
       </nav>
+
+      {infoPanel && <div className="sidebar__info">{infoPanel}</div>}
     </aside>
   );
 }

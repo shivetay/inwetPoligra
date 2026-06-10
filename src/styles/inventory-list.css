@@ -84,6 +84,7 @@ body {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  flex: 1;
 }
 
 .sidebar__nav-item {

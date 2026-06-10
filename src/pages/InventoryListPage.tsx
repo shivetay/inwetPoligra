@@ -3,10 +3,14 @@ import { KpiCards } from "../components/KpiCards";
 import { InventoryTable } from "../components/InventoryTable";
 import { t } from "../i18n";
 
-export function InventoryListPage() {
+interface InventoryListPageProps {
+  onNewInventory: () => void;
+}
+
+export function InventoryListPage({ onNewInventory }: InventoryListPageProps) {
   return (
     <div className="app-layout">
-      <Sidebar />
+      <Sidebar activeNav="nav.inventories" />
 
       <main className="main-content">
         <div className="top-bar">
@@ -30,7 +34,7 @@ export function InventoryListPage() {
               {t("inventoryList.description")}
             </p>
           </div>
-          <button type="button" className="btn-primary">
+          <button type="button" className="btn-primary" onClick={onNewInventory}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <line x1="12" y1="5" x2="12" y2="19" />
               <line x1="5" y1="12" x2="19" y2="12" />
