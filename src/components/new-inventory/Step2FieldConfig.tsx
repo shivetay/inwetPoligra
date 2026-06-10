@@ -1,6 +1,13 @@
-import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import { useCallback, useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import {
+  createCustomColumn,
+  listCustomColumns,
+  listMeasureUnits,
+  listUniversalUnits,
+} from "../../api/fields";
 import { availableFields } from "../../data/mockFields";
 import { t, type TranslationKey } from "../../i18n";
+import type { CustomColumn, MeasureUnit, UniversalUnit } from "../../types/fields";
 
 interface Step2FieldConfigProps {
   selectedFieldIds: string[];
@@ -16,6 +23,20 @@ const previewSampleValues: Record<string, TranslationKey> = {
   price: "newInventory.preview.samplePrice",
 };
 
+function unitLabelKey(unitId: string): TranslationKey {
+  return `unit.${unitId}` as TranslationKey;
+}
+
+function customColumnFieldId(columnId: string): string {
+  return `custom-col-${columnId}`;
+}
+
+function parseCustomColumnId(fieldId: string): string | null {
+  if (fieldId.startsWith("custom-col-")) return fieldId.replace("custom-col-", "");
+  if (fieldId.startsWith("dept-col-")) return fieldId.replace("dept-col-", "");
+  return null;
+}
+
 export function Step2FieldConfig({
   selectedFieldIds,
   onSelectedFieldIdsChange,
@@ -23,11 +44,39 @@ export function Step2FieldConfig({
   onConfirm,
 }: Step2FieldConfigProps) {
   const [customFieldName, setCustomFieldName] = useState("");
-  const [customFieldType, setCustomFieldType] = useState<"text" | "number">("text");
-  const [customFields, setCustomFields] = useState<{ id: string; label: string }[]>([]);
+  const [selectedUnitId, setSelectedUnitId] = useState("text");
+  const [selectedMeasureUnitId, setSelectedMeasureUnitId] = useState("");
+  const [universalUnits, setUniversalUnits] = useState<UniversalUnit[]>([]);
+  const [measureUnits, setMeasureUnits] = useState<MeasureUnit[]>([]);
+  const [customColumns, setCustomColumns] = useState<CustomColumn[]>([]);
   const [draggingFieldId, setDraggingFieldId] = useState<string | null>(null);
   const [dragOverFieldId, setDragOverFieldId] = useState<string | null>(null);
   const draggingFieldIdRef = useRef<string | null>(null);
+
+  const loadData = useCallback(async () => {
+    const [units, measures, columns] = await Promise.all([
+      listUniversalUnits(),
+      listMeasureUnits(),
+      listCustomColumns(),
+    ]);
+    setUniversalUnits(units);
+    setMeasureUnits(measures);
+    setCustomColumns(columns);
+    if (units.length > 0) {
+      setSelectedUnitId((current) =>
+        units.some((u) => u.id === current) ? current : units[0].id,
+      );
+    }
+    if (measures.length > 0) {
+      setSelectedMeasureUnitId((current) =>
+        measures.some((m) => m.id === current) ? current : measures[0].id,
+      );
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadData();
+  }, [loadData]);
 
   useEffect(() => {
     if (!draggingFieldId) return;
@@ -73,37 +122,66 @@ export function Step2FieldConfig({
   };
 
   const toggleField = (fieldId: string) => {
-    if (selectedFieldIds.includes(fieldId)) {
-      onSelectedFieldIdsChange(selectedFieldIds.filter((id) => id !== fieldId));
-    } else {
-      onSelectedFieldIdsChange([...selectedFieldIds, fieldId]);
-    }
+    onSelectedFieldIdsChange((prev) =>
+      prev.includes(fieldId) ? prev.filter((id) => id !== fieldId) : [...prev, fieldId],
+    );
   };
 
-  const addCustomField = () => {
-    const trimmed = customFieldName.trim();
-    if (!trimmed) return;
+  const canAddCustomField =
+    customFieldName.trim() !== "" &&
+    selectedUnitId !== "" &&
+    (selectedUnitId !== "measure" || selectedMeasureUnitId !== "");
 
-    const id = `custom-${Date.now()}`;
-    setCustomFields([...customFields, { id, label: trimmed }]);
-    onSelectedFieldIdsChange([...selectedFieldIds, id]);
+  const addCustomField = async () => {
+    const trimmed = customFieldName.trim();
+    if (!trimmed || !selectedUnitId) return;
+    if (selectedUnitId === "measure" && !selectedMeasureUnitId) return;
+
+    const created = await createCustomColumn(
+      trimmed,
+      selectedUnitId,
+      selectedUnitId === "measure" ? selectedMeasureUnitId : undefined,
+    );
+    setCustomColumns((prev) => [...prev, created]);
+    onSelectedFieldIdsChange((prev) => [...prev, customColumnFieldId(created.id)]);
     setCustomFieldName("");
+  };
+
+  const getPreviewValue = (fieldId: string): string => {
+    const builtInSample = previewSampleValues[fieldId];
+    if (builtInSample) return t(builtInSample);
+
+    const colId = parseCustomColumnId(fieldId);
+    if (colId) {
+      const col = customColumns.find((c) => c.id === colId);
+      return col?.sampleValue ?? "—";
+    }
+
+    return "—";
   };
 
   const orderedFields = selectedFieldIds
     .map((id) => {
       const builtIn = availableFields.find((f) => f.id === id);
-      if (builtIn) return { id, labelKey: builtIn.labelKey as TranslationKey, previewKey: builtIn.previewKey };
-      const custom = customFields.find((f) => f.id === id);
-      if (custom) return { id, labelKey: null, customLabel: custom.label, previewKey: undefined };
+      if (builtIn) {
+        return {
+          id,
+          label: t(builtIn.labelKey),
+          previewHeader: builtIn.previewKey ? t(builtIn.previewKey) : t(builtIn.labelKey),
+        };
+      }
+
+      const colId = parseCustomColumnId(id);
+      if (colId) {
+        const col = customColumns.find((c) => c.id === colId);
+        if (col) {
+          return { id, label: col.name, previewHeader: col.name };
+        }
+      }
+
       return null;
     })
-    .filter(Boolean) as {
-      id: string;
-      labelKey: TranslationKey | null;
-      customLabel?: string;
-      previewKey?: TranslationKey;
-    }[];
+    .filter(Boolean) as { id: string; label: string; previewHeader: string }[];
 
   return (
     <div className="step2-layout">
@@ -134,20 +212,36 @@ export function Step2FieldConfig({
                 </button>
               );
             })}
-            {customFields.map((field) => (
-              <button
-                key={field.id}
-                type="button"
-                className="field-chip field-chip--selected"
-                onClick={() => toggleField(field.id)}
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <polyline points="20 6 9 17 4 12" />
-                </svg>
-                {field.label}
-              </button>
-            ))}
           </div>
+
+          {customColumns.length > 0 && (
+            <div className="field-chips field-chips--department">
+              {customColumns.map((col) => {
+                const fieldId = customColumnFieldId(col.id);
+                const isSelected = selectedFieldIds.includes(fieldId);
+                return (
+                  <button
+                    key={col.id}
+                    type="button"
+                    className={`field-chip field-chip--department${isSelected ? " field-chip--selected" : ""}`}
+                    onClick={() => toggleField(fieldId)}
+                  >
+                    {isSelected ? (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    ) : (
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <line x1="12" y1="5" x2="12" y2="19" />
+                        <line x1="5" y1="12" x2="19" y2="12" />
+                      </svg>
+                    )}
+                    {col.name}
+                  </button>
+                );
+              })}
+            </div>
+          )}
 
           <div className="custom-field-form">
             <label className="form-field__label">{t("newInventory.fields.customLabel")}</label>
@@ -161,13 +255,34 @@ export function Step2FieldConfig({
               />
               <select
                 className="form-field__input form-field__select custom-field-form__type"
-                value={customFieldType}
-                onChange={(e) => setCustomFieldType(e.target.value as "text" | "number")}
+                value={selectedUnitId}
+                onChange={(e) => setSelectedUnitId(e.target.value)}
               >
-                <option value="text">{t("newInventory.fields.typeText")}</option>
-                <option value="number">{t("newInventory.fields.typeNumber")}</option>
+                {universalUnits.map((unit) => (
+                  <option key={unit.id} value={unit.id}>
+                    {t(unitLabelKey(unit.id))}
+                  </option>
+                ))}
               </select>
-              <button type="button" className="btn-secondary" onClick={addCustomField}>
+              {selectedUnitId === "measure" && (
+                <select
+                  className="form-field__input form-field__select custom-field-form__type"
+                  value={selectedMeasureUnitId}
+                  onChange={(e) => setSelectedMeasureUnitId(e.target.value)}
+                >
+                  {measureUnits.map((unit) => (
+                    <option key={unit.id} value={unit.id}>
+                      {unit.name} ({unit.abbreviation})
+                    </option>
+                  ))}
+                </select>
+              )}
+              <button
+                type="button"
+                className="btn-secondary"
+                disabled={!canAddCustomField}
+                onClick={() => void addCustomField()}
+              >
                 {t("newInventory.fields.add")}
               </button>
             </div>
@@ -185,9 +300,7 @@ export function Step2FieldConfig({
                 <tr>
                   <th>{t("newInventory.preview.col.lp")}</th>
                   {orderedFields.map((col) => (
-                    <th key={col.id}>
-                      {col.previewKey ? t(col.previewKey) : col.customLabel}
-                    </th>
+                    <th key={col.id}>{col.previewHeader}</th>
                   ))}
                 </tr>
               </thead>
@@ -195,11 +308,7 @@ export function Step2FieldConfig({
                 <tr>
                   <td>1</td>
                   {orderedFields.map((col) => (
-                    <td key={col.id}>
-                      {previewSampleValues[col.id]
-                        ? t(previewSampleValues[col.id])
-                        : "—"}
-                    </td>
+                    <td key={col.id}>{getPreviewValue(col.id)}</td>
                   ))}
                 </tr>
               </tbody>
@@ -231,9 +340,7 @@ export function Step2FieldConfig({
                   <circle cx="15" cy="18" r="1.5" />
                 </svg>
               </span>
-              <span className="field-order-item__label">
-                {field.labelKey ? t(field.labelKey) : field.customLabel}
-              </span>
+              <span className="field-order-item__label">{field.label}</span>
             </li>
           ))}
         </ul>

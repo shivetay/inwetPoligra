@@ -2539,3 +2539,9 @@ node_modules/yallist/package.json
 node_modules/yallist/README.md
 node_modules/yallist/yallist.js
 .DS_Store
+
+node_modules/
+node_modules/.vite/deps/chunk-6NEERNER.js
+node_modules/.vite/deps/chunk-6NEERNER.js.map
+node_modules/.vite/deps/chunk-7HBPEGXI.js
+node_modules/.vite/deps/chunk-7HBPEGXI.js.map

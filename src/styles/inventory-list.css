@@ -427,6 +427,15 @@ body {
   color: var(--color-badge-done);
 }
 
+.status-badge--draft {
+  background: #fef3c7;
+  color: #d97706;
+}
+
+.inventory-table__row--draft:hover td {
+  background: #fffbeb;
+}
+
 /* Responsible */
 
 .responsible {

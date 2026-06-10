@@ -49,9 +49,10 @@ const navItemDefs: { key: TranslationKey; icon: ReactNode }[] = [
 interface SidebarProps {
   activeNav?: TranslationKey;
   infoPanel?: ReactNode;
+  onNavSelect?: (key: TranslationKey) => void;
 }
 
-export function Sidebar({ activeNav = "nav.inventories", infoPanel }: SidebarProps) {
+export function Sidebar({ activeNav = "nav.inventories", infoPanel, onNavSelect }: SidebarProps) {
   return (
     <aside className="sidebar">
       <div className="sidebar__brand">
@@ -72,6 +73,7 @@ export function Sidebar({ activeNav = "nav.inventories", infoPanel }: SidebarPro
             key={item.key}
             type="button"
             className={`sidebar__nav-item${activeNav === item.key ? " sidebar__nav-item--active" : ""}`}
+            onClick={() => onNavSelect?.(item.key)}
           >
             <span className="sidebar__nav-icon">{item.icon}</span>
             {t(item.key)}

@@ -2,10 +2,9 @@ import { t } from "../i18n";
 
 interface SidebarInfoPanelProps {
   columnCount: number;
-  sectorLabel: string;
 }
 
-export function SidebarInfoPanel({ columnCount, sectorLabel }: SidebarInfoPanelProps) {
+export function SidebarInfoPanel({ columnCount }: SidebarInfoPanelProps) {
   return (
     <div className="sidebar-info-panel">
       <div className="sidebar-info-panel__icon">
@@ -17,10 +16,7 @@ export function SidebarInfoPanel({ columnCount, sectorLabel }: SidebarInfoPanelP
         {t("newInventory.sidebar.verification.title")}
       </div>
       <p className="sidebar-info-panel__message">
-        {t("newInventory.sidebar.verification.message", {
-          count: columnCount,
-          sector: sectorLabel,
-        })}
+        {t("newInventory.sidebar.verification.message", { count: columnCount })}
       </p>
     </div>
   );

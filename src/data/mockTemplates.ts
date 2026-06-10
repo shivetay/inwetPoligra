@@ -6,17 +6,6 @@ export interface Template {
   descriptionKey: TranslationKey;
 }
 
-export interface Department {
-  id: string;
-  labelKey: TranslationKey;
-}
-
-export const departments: Department[] = [
-  { id: "warehouse-a", labelKey: "newInventory.department.warehouseA" },
-  { id: "warehouse-b", labelKey: "newInventory.department.warehouseB" },
-  { id: "warehouse-c", labelKey: "newInventory.department.warehouseC" },
-];
-
 export const templates: Template[] = [
   {
     id: "standard",

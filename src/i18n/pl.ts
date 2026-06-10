@@ -12,6 +12,7 @@ export const translations = {
   "inventoryList.description":
     "Przeglądaj i zarządzaj bieżącymi procesami kontroli stanów.",
   "inventoryList.newInventory": "Nowa inwentaryzacja",
+  "inventoryList.resumeDraft": "Kontynuuj",
 
   "kpi.active": "Aktywne",
   "kpi.completedMonth": "Zakończone (miesiąc)",
@@ -37,8 +38,14 @@ export const translations = {
 
   "status.inProgress": "W TOKU",
   "status.completed": "ZAKOŃCZONA",
+  "status.draft": "SZKIC",
 
   "newInventory.title": "Nowa Inwentaryzacja",
+  "newInventory.cancel": "Anuluj",
+  "newInventory.cancel.confirm":
+    "Czy na pewno chcesz wyjść? Niezapisane zmiany zostaną utracone.",
+  "newInventory.saveDraft": "Zapisz jako szkic",
+  "newInventory.draft.unnamed": "Szkic bez nazwy",
   "newInventory.step1.label": "KROK 1: Podstawowe informacje",
   "newInventory.step1.short": "Podstawowe informacje",
   "newInventory.step2.label": "KROK 2: Konfiguracja pól",
@@ -47,10 +54,8 @@ export const translations = {
   "newInventory.form.name": "Nazwa inwentaryzacji",
   "newInventory.form.namePlaceholder": "Np. Inwentaryzacja Kwartalna Q1 2024",
   "newInventory.form.startDate": "Data rozpoczęcia",
-  "newInventory.form.department": "Odpowiedzialny dział",
   "newInventory.form.notes": "Uwagi (opcjonalnie)",
   "newInventory.form.notesPlaceholder": "Dodatkowe instrukcje dla zespołu...",
-  "newInventory.form.selectDepartment": "Wybierz dział",
 
   "newInventory.templates.title": "Wybierz gotowy szablon",
   "newInventory.templates.addNew": "Dodaj nowy szablon",
@@ -63,20 +68,15 @@ export const translations = {
   "newInventory.template.food.name": "Artykuły Spożywcze",
   "newInventory.template.food.desc": "+ Data ważności, Nr partii",
 
-  "newInventory.department.warehouseA": "Magazyn Główny - Sektor A",
-  "newInventory.department.warehouseB": "Magazyn Główny - Sektor B",
-  "newInventory.department.warehouseC": "Magazyn Pomocniczy - Sektor C",
 
   "newInventory.next": "Dalej: Konfiguracja pól",
   "newInventory.back": "Wróć do informacji",
   "newInventory.confirm": "Zatwierdź i rozpocznij",
 
   "newInventory.fields.title": "Wybierz kolumny do wyświetlenia",
-  "newInventory.fields.customLabel": "Dodaj własne pole tekstowe lub liczbowe",
+  "newInventory.fields.customLabel": "Dodaj własne pole",
   "newInventory.fields.customPlaceholder": "Nazwa nowego pola...",
-  "newInventory.fields.type": "Typ",
-  "newInventory.fields.typeText": "Tekst",
-  "newInventory.fields.typeNumber": "Liczba",
+  "newInventory.fields.type": "Jednostka",
   "newInventory.fields.add": "Dodaj",
   "newInventory.fields.orderTitle": "Kolejność w arkuszu",
 
@@ -104,7 +104,42 @@ export const translations = {
 
   "newInventory.sidebar.verification.title": "Weryfikacja szablonu",
   "newInventory.sidebar.verification.message":
-    "Wybrano {count} kolumn. Ten układ jest zgodny z polityką raportowania dla {sector}.",
+    "Wybrano {count} kolumn. Ten układ jest gotowy do rozpoczęcia inwentaryzacji.",
+
+  "unit.text": "Tekst",
+  "unit.number": "Liczba",
+  "unit.currency": "Waluta",
+  "unit.quantity": "Ilość",
+  "unit.measure": "Jednostka miary",
+  "unit.date": "Data",
+  "unit.percent": "Procent",
+  "unit.boolean": "Tak / Nie",
+
+  "settings.title": "Ustawienia",
+  "settings.description": "Zarządzaj jednostkami, kolumnami i jednostkami miary.",
+  "settings.loading": "Ładowanie...",
+  "settings.tabs.units": "Jednostki",
+  "settings.tabs.columns": "Kolumny",
+  "settings.tabs.measureUnits": "Jednostki miary",
+  "settings.units.description":
+    "Jednostki dostępne przy tworzeniu kolumn. Wartości przykładowe są używane w podglądzie.",
+  "settings.columns.description":
+    "Kolumny dostępne w inwentaryzacji. Przy typie „Jednostka miary” wybierz konkretną jednostkę.",
+  "settings.columns.col.name": "Nazwa kolumny",
+  "settings.columns.col.unit": "Typ",
+  "settings.columns.col.measureUnit": "Jednostka miary",
+  "settings.columns.col.sample": "Przykład w podglądzie",
+  "settings.columns.empty": "Brak utworzonych kolumn.",
+  "settings.columns.delete": "Usuń",
+  "settings.columns.add": "Dodaj kolumnę",
+  "settings.columns.namePlaceholder": "Nazwa kolumny...",
+  "settings.measureUnits.description":
+    "Konkretne jednostki miary (np. szt., kg), które można przypisać do kolumn typu „Jednostka miary”.",
+  "settings.measureUnits.add": "Dodaj jednostkę",
+  "settings.measureUnits.namePlaceholder": "Np. Sztuka",
+  "settings.measureUnits.abbrPlaceholder": "Np. szt.",
+  "settings.measureUnits.empty": "Brak zdefiniowanych jednostek miary.",
+  "settings.measureUnits.delete": "Usuń",
 } as const;
 
 export type TranslationKey = keyof typeof translations;

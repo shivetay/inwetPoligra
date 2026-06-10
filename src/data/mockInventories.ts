@@ -1,6 +1,6 @@
 import type { TranslationKey } from "../i18n";
 
-export type InventoryStatusKey = "inProgress" | "completed";
+export type InventoryStatusKey = "inProgress" | "completed" | "draft";
 
 export interface Inventory {
   id: string;
@@ -21,6 +21,7 @@ export const kpiData = {
 export const statusTranslationKeys: Record<InventoryStatusKey, TranslationKey> = {
   inProgress: "status.inProgress",
   completed: "status.completed",
+  draft: "status.draft",
 };
 
 export const inventories: Inventory[] = [

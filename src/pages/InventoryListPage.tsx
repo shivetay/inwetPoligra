@@ -1,16 +1,65 @@
+import { useCallback, useEffect, useState } from "react";
+import { listInventoryDrafts } from "../api/inventory";
 import { Sidebar } from "../components/Sidebar";
 import { KpiCards } from "../components/KpiCards";
 import { InventoryTable } from "../components/InventoryTable";
-import { t } from "../i18n";
+import { t, type TranslationKey } from "../i18n";
+import type { InventoryDraft } from "../types/inventory";
 
 interface InventoryListPageProps {
   onNewInventory: () => void;
+  onResumeDraft: (draftId: string) => void;
+  onNavSelect: (key: TranslationKey) => void;
 }
 
-export function InventoryListPage({ onNewInventory }: InventoryListPageProps) {
+export function InventoryListPage({
+  onNewInventory,
+  onResumeDraft,
+  onNavSelect,
+}: InventoryListPageProps) {
+  const [drafts, setDrafts] = useState<InventoryDraft[]>([]);
+
+  const loadDrafts = useCallback(async () => {
+    try {
+      const list = await listInventoryDrafts();
+      setDrafts(list);
+    } catch {
+      setDrafts([]);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadDrafts();
+  }, [loadDrafts]);
+
+  const draftRows = drafts.map((draft) => {
+    const displayName = draft.name.trim() || t("newInventory.draft.unnamed");
+    const updatedDate = new Date(Number(draft.updatedAt) * 1000);
+    const formattedDate = Number.isNaN(updatedDate.getTime())
+      ? "—"
+      : updatedDate.toLocaleString("pl-PL", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+
+    return {
+      id: draft.id,
+      displayId: `DRAFT / ${displayName}`,
+      createdAt: formattedDate,
+      status: "draft" as const,
+      itemCount: draft.selectedFieldIds.length,
+      responsible: "—",
+      isDraft: true,
+      draftId: draft.id,
+    };
+  });
+
   return (
     <div className="app-layout">
-      <Sidebar activeNav="nav.inventories" />
+      <Sidebar activeNav="nav.inventories" onNavSelect={onNavSelect} />
 
       <main className="main-content">
         <div className="top-bar">
@@ -44,7 +93,7 @@ export function InventoryListPage({ onNewInventory }: InventoryListPageProps) {
         </div>
 
         <KpiCards />
-        <InventoryTable />
+        <InventoryTable draftRows={draftRows} onResumeDraft={onResumeDraft} />
       </main>
     </div>
   );

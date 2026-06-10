@@ -11,6 +11,22 @@ const tableColumns = [
   "table.col.actions",
 ] as const;
 
+export interface InventoryTableRow {
+  id: string;
+  displayId: string;
+  createdAt: string;
+  status: InventoryStatusKey;
+  itemCount: number;
+  responsible: string;
+  isDraft?: boolean;
+  draftId?: string;
+}
+
+interface InventoryTableProps {
+  draftRows?: InventoryTableRow[];
+  onResumeDraft?: (draftId: string) => void;
+}
+
 function getInitials(name: string): string {
   return name
     .split(" ")
@@ -26,14 +42,35 @@ function formatNumber(value: number): string {
 
 function StatusBadge({ status }: { status: InventoryStatusKey }) {
   const isProgress = status === "inProgress";
+  const isDraft = status === "draft";
   return (
-    <span className={`status-badge${isProgress ? " status-badge--progress" : " status-badge--done"}`}>
+    <span
+      className={`status-badge${
+        isDraft
+          ? " status-badge--draft"
+          : isProgress
+            ? " status-badge--progress"
+            : " status-badge--done"
+      }`}
+    >
       {t(statusTranslationKeys[status])}
     </span>
   );
 }
 
-export function InventoryTable() {
+export function InventoryTable({ draftRows = [], onResumeDraft }: InventoryTableProps) {
+  const staticRows: InventoryTableRow[] = inventories.map((inv) => ({
+    id: inv.id,
+    displayId: inv.id,
+    createdAt: inv.createdAt,
+    status: inv.status,
+    itemCount: inv.itemCount,
+    responsible: inv.responsible,
+  }));
+
+  const allRows = [...draftRows, ...staticRows];
+  const shown = draftRows.length + kpiData.totalShown;
+
   return (
     <div className="table-section">
       <div className="table-toolbar">
@@ -55,8 +92,8 @@ export function InventoryTable() {
         </div>
         <span className="table-toolbar__count">
           {t("table.shownCount", {
-            shown: kpiData.totalShown,
-            total: kpiData.totalCount,
+            shown,
+            total: kpiData.totalCount + draftRows.length,
           })}
         </span>
       </div>
@@ -71,9 +108,18 @@ export function InventoryTable() {
             </tr>
           </thead>
           <tbody>
-            {inventories.map((inv) => (
-              <tr key={inv.id}>
-                <td className="inventory-table__id">{inv.id}</td>
+            {allRows.map((inv) => (
+              <tr
+                key={inv.id}
+                className={inv.isDraft ? "inventory-table__row--draft" : undefined}
+                onClick={
+                  inv.isDraft && inv.draftId && onResumeDraft
+                    ? () => onResumeDraft(inv.draftId!)
+                    : undefined
+                }
+                style={inv.isDraft ? { cursor: "pointer" } : undefined}
+              >
+                <td className="inventory-table__id">{inv.displayId}</td>
                 <td>{inv.createdAt}</td>
                 <td>
                   <StatusBadge status={inv.status} />
@@ -81,18 +127,33 @@ export function InventoryTable() {
                 <td className="inventory-table__number">{formatNumber(inv.itemCount)}</td>
                 <td>
                   <div className="responsible">
-                    <span className="avatar">{getInitials(inv.responsible)}</span>
+                    {!inv.isDraft && (
+                      <span className="avatar">{getInitials(inv.responsible)}</span>
+                    )}
                     {inv.responsible}
                   </div>
                 </td>
                 <td>
-                  <button type="button" className="action-btn" aria-label={t("table.actions.more")}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <circle cx="12" cy="5" r="2" />
-                      <circle cx="12" cy="12" r="2" />
-                      <circle cx="12" cy="19" r="2" />
-                    </svg>
-                  </button>
+                  {inv.isDraft ? (
+                    <button
+                      type="button"
+                      className="btn-text"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (inv.draftId && onResumeDraft) onResumeDraft(inv.draftId);
+                      }}
+                    >
+                      {t("inventoryList.resumeDraft")}
+                    </button>
+                  ) : (
+                    <button type="button" className="action-btn" aria-label={t("table.actions.more")}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <circle cx="12" cy="5" r="2" />
+                        <circle cx="12" cy="12" r="2" />
+                        <circle cx="12" cy="19" r="2" />
+                      </svg>
+                    </button>
+                  )}
                 </td>
               </tr>
             ))}

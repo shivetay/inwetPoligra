@@ -45,11 +45,25 @@
   gap: 28px;
 }
 
+.new-inventory-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
 .new-inventory-title {
   margin: 0;
   font-size: 22px;
   font-weight: 700;
   color: var(--color-text);
+}
+
+.new-inventory-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
 }
 
 /* Stepper */
@@ -162,6 +176,16 @@
 .form-field__textarea {
   resize: vertical;
   min-height: 96px;
+}
+
+.form-field__static {
+  margin: 0;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: var(--color-bg);
+  font-size: 14px;
+  color: var(--color-text);
 }
 
 /* Buttons */

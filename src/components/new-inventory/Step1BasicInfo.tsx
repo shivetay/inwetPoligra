@@ -1,10 +1,9 @@
-import { departments, type Template } from "../../data/mockTemplates";
+import type { Template } from "../../data/mockTemplates";
 import { t } from "../../i18n";
 
 export interface BasicInfoForm {
   name: string;
   startDate: string;
-  department: string;
   notes: string;
   templateId: string;
 }
@@ -18,11 +17,7 @@ interface Step1BasicInfoProps {
 }
 
 function isFormValid(form: BasicInfoForm): boolean {
-  return (
-    form.name.trim() !== "" &&
-    form.startDate !== "" &&
-    form.department !== ""
-  );
+  return form.name.trim() !== "" && form.startDate !== "";
 }
 
 export function Step1BasicInfo({
@@ -66,25 +61,6 @@ export function Step1BasicInfo({
             value={form.startDate}
             onChange={(e) => update({ startDate: e.target.value })}
           />
-        </div>
-
-        <div className="form-field">
-          <label className="form-field__label" htmlFor="department">
-            {t("newInventory.form.department")}
-          </label>
-          <select
-            id="department"
-            className="form-field__input form-field__select"
-            value={form.department}
-            onChange={(e) => update({ department: e.target.value })}
-          >
-            <option value="">{t("newInventory.form.selectDepartment")}</option>
-            {departments.map((dept) => (
-              <option key={dept.id} value={dept.id}>
-                {t(dept.labelKey)}
-              </option>
-            ))}
-          </select>
         </div>
 
         <div className="form-field">
