@@ -1,0 +1,20 @@
+:root {
+  --color-primary: #1e40af;
+  --color-primary-hover: #1e3a8a;
+  --color-secondary: #64748b;
+  --color-tertiary: #0095ff;
+  --color-bg: #f1f5f9;
+  --color-surface: #ffffff;
+  --color-border: #e2e8f0;
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-sidebar-active-bg: #eff6ff;
+  --color-badge-progress: #0095ff;
+  --color-badge-progress-bg: #e0f2fe;
+  --color-badge-done: #64748b;
+  --color-badge-done-bg: #f1f5f9;
+  --radius: 8px;
+  --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.05);
+  --shadow-md: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --sidebar-width: 240px;
+}
